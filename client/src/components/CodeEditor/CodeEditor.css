@@ -1,0 +1,27 @@
+.editor-container{
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+
+.editor-container .monaco-editor,
+.editor-container .overflow-guard {
+
+    min-height:420px;
+
+}
+
+@media(max-width:768px){
+
+    .editor-container .monaco-editor,
+    .editor-container .overflow-guard {
+
+        min-height:360px;
+
+    }
+
+}

@@ -1,68 +1,287 @@
 import fs from "fs/promises";
 import path from "path";
-import { execFile } from "child_process";
-import { promisify } from "util";
+import { exec, spawn } from "child_process";
+import v8 from "v8";
 
-const execFileAsync = promisify(execFile);
+// Configuration limits for isolated execution
+const TIMEOUT_LIMIT = 5000; // 5 seconds maximum execution time
+const MAX_BUFFER = 1024 * 1024; // 1 MB max output buffer
+const TEMP_DIR = path.join(process.cwd(), "temp_execution");
 
-const TEMP_DIR = path.join(process.cwd(), "temp");
-
-// Create temp folder if it doesn't exist
-async function ensureTempDirectory() {
+// Ensure temporary execution directory exists
+async function ensureTempDir() {
   try {
     await fs.mkdir(TEMP_DIR, { recursive: true });
   } catch (error) {
-    console.error(error);
+    console.error("Failed to create temporary directory:", error);
   }
 }
 
-// =======================================================
-// Execute JavaScript Code
-// =======================================================
-export const executeJavaScript = async (code) => {
-  await ensureTempDirectory();
+// Safely clean up created temporary files/directories
+async function cleanUpTempFiles(files = []) {
+  for (const file of files) {
+    if (file) {
+      try {
+        await fs.rm(file, { force: true, recursive: true });
+      } catch (err) {
+        // Silently ignore cleanup errors
+      }
+    }
+  }
+}
 
-  const fileName = `code_${Date.now()}.js`;
-  const filePath = path.join(TEMP_DIR, fileName);
+/**
+ * Executes a process with strict timeout, stdin input support, and output capture
+ */
+function runProcess(command, args, options = {}, input = "") {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    let stdout = "";
+    let stderr = "";
+    let isTimedOut = false;
+
+    const child = spawn(command, args, {
+      cwd: options.cwd || TEMP_DIR,
+      env: { PATH: process.env.PATH }, // Strict environment variable isolation
+      windowsHide: true,
+    });
+
+    const timer = setTimeout(() => {
+      isTimedOut = true;
+      child.kill("SIGKILL");
+    }, options.timeout || TIMEOUT_LIMIT);
+
+    if (input) {
+      child.stdin.write(input);
+    }
+    child.stdin.end();
+
+    child.stdout.on("data", (data) => {
+      if (stdout.length < MAX_BUFFER) {
+        stdout += data.toString();
+      }
+    });
+
+    child.stderr.on("data", (data) => {
+      if (stderr.length < MAX_BUFFER) {
+        stderr += data.toString();
+      }
+    });
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      const executionTime = Date.now() - startTime;
+      resolve({
+        success: false,
+        output: "",
+        error: err.message || "Failed to start execution process",
+        executionTime,
+        memoryUsed: 0,
+        exitCode: 1,
+        status: "error",
+      });
+    });
+
+    child.on("close", (exitCode) => {
+      clearTimeout(timer);
+      const executionTime = Date.now() - startTime;
+      const memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100;
+
+      if (isTimedOut) {
+        resolve({
+          success: false,
+          output: stdout.trim(),
+          error: `Execution timed out after ${TIMEOUT_LIMIT / 1000} seconds.`,
+          executionTime,
+          memoryUsed,
+          exitCode: 124,
+          status: "timeout",
+        });
+        return;
+      }
+
+      if (exitCode !== 0) {
+        resolve({
+          success: false,
+          output: stdout.trim(),
+          error: stderr.trim() || `Process exited with code ${exitCode}`,
+          executionTime,
+          memoryUsed,
+          exitCode: exitCode || 1,
+          status: "runtime_error",
+        });
+        return;
+      }
+
+      resolve({
+        success: true,
+        output: stdout.trim(),
+        error: stderr.trim(),
+        executionTime,
+        memoryUsed,
+        exitCode: 0,
+        status: "success",
+      });
+    });
+  });
+}
+
+// =======================================================
+// JavaScript Execution
+// =======================================================
+export const executeJavaScript = async (code, input = "") => {
+  await ensureTempDir();
+  const fileId = `js_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const filePath = path.join(TEMP_DIR, `${fileId}.js`);
 
   try {
-    // Save code to temporary file
+    await fs.writeFile(filePath, code, "utf8");
+    const result = await runProcess("node", [filePath], { cwd: TEMP_DIR }, input);
+    return result;
+  } finally {
+    await cleanUpTempFiles([filePath]);
+  }
+};
+
+// =======================================================
+// Python Execution
+// =======================================================
+export const executePython = async (code, input = "") => {
+  await ensureTempDir();
+  const fileId = `py_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const filePath = path.join(TEMP_DIR, `${fileId}.py`);
+
+  // Detect python command (python3 or python)
+  const pythonCmd = process.platform === "win32" ? "python" : "python3";
+
+  try {
+    await fs.writeFile(filePath, code, "utf8");
+    const result = await runProcess(pythonCmd, [filePath], { cwd: TEMP_DIR }, input);
+    return result;
+  } finally {
+    await cleanUpTempFiles([filePath]);
+  }
+};
+
+// =======================================================
+// Java Execution
+// =======================================================
+export const executeJava = async (code, input = "") => {
+  await ensureTempDir();
+  const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const folderPath = path.join(TEMP_DIR, `java_${uniqueId}`);
+  await fs.mkdir(folderPath, { recursive: true });
+
+  // Extract public class name or fallback to Main
+  const classNameMatch = code.match(/public\s+class\s+([A-Za-z0-9_]+)/);
+  const className = classNameMatch ? classNameMatch[1] : "Main";
+  const filePath = path.join(folderPath, `${className}.java`);
+
+  try {
     await fs.writeFile(filePath, code, "utf8");
 
-    const startTime = Date.now();
+    // Step 1: Compile Java Code
+    const compileResult = await runProcess("javac", [filePath], { cwd: folderPath });
+    if (!compileResult.success) {
+      return {
+        success: false,
+        output: "",
+        error: compileResult.error || compileResult.output || "Java Compilation Error",
+        executionTime: compileResult.executionTime,
+        memoryUsed: 0,
+        exitCode: 1,
+        status: "compilation_error",
+      };
+    }
 
-    const { stdout, stderr } = await execFileAsync(
-      "node",
-      [filePath],
-      {
-        timeout: 5000,
-      }
-    );
+    // Step 2: Run Compiled Java Class
+    const runResult = await runProcess("java", ["-cp", folderPath, className], { cwd: folderPath }, input);
+    return runResult;
+  } finally {
+    await cleanUpTempFiles([folderPath]);
+  }
+};
 
-    const endTime = Date.now();
+// =======================================================
+// C++ Execution
+// =======================================================
+export const executeCpp = async (code, input = "") => {
+  await ensureTempDir();
+  const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const filePath = path.join(TEMP_DIR, `cpp_${uniqueId}.cpp`);
+  const exeName = process.platform === "win32" ? `cpp_${uniqueId}.exe` : `./cpp_${uniqueId}.out`;
+  const exePath = path.join(TEMP_DIR, exeName);
 
-    // Delete temporary file
-    await fs.unlink(filePath);
+  try {
+    await fs.writeFile(filePath, code, "utf8");
 
-    return {
-      success: true,
-      output: stdout,
-      error: stderr,
-      executionTime: endTime - startTime,
-      exitCode: 0,
-    };
-  } catch (error) {
-    // Clean up temp file
-    try {
-      await fs.unlink(filePath);
-    } catch {}
+    // Step 1: Compile C++ Code with g++
+    const compileResult = await runProcess("g++", ["-O2", filePath, "-o", exePath], { cwd: TEMP_DIR });
+    if (!compileResult.success) {
+      return {
+        success: false,
+        output: "",
+        error: compileResult.error || compileResult.output || "C++ Compilation Error",
+        executionTime: compileResult.executionTime,
+        memoryUsed: 0,
+        exitCode: 1,
+        status: "compilation_error",
+      };
+    }
 
+    // Step 2: Run Executable
+    const runCmd = process.platform === "win32" ? exePath : `./${path.basename(exePath)}`;
+    const runResult = await runProcess(runCmd, [], { cwd: TEMP_DIR }, input);
+    return runResult;
+  } finally {
+    await cleanUpTempFiles([filePath, exePath]);
+  }
+};
+
+// =======================================================
+// Master Dispatcher function
+// =======================================================
+export const executeCode = async (language, code, input = "") => {
+  if (!language || !code) {
     return {
       success: false,
       output: "",
-      error: error.stderr || error.message,
+      error: "Language and code are required.",
       executionTime: 0,
-      exitCode: error.code ?? 1,
+      memoryUsed: 0,
+      exitCode: 1,
+      status: "error",
     };
+  }
+
+  const langKey = language.toLowerCase();
+
+  switch (langKey) {
+    case "javascript":
+    case "js":
+      return await executeJavaScript(code, input);
+
+    case "python":
+    case "py":
+      return await executePython(code, input);
+
+    case "java":
+      return await executeJava(code, input);
+
+    case "cpp":
+    case "c++":
+    case "c_cpp":
+      return await executeCpp(code, input);
+
+    default:
+      return {
+        success: false,
+        output: "",
+        error: `Unsupported language: '${language}'. Supported: JavaScript, Python, Java, C++.`,
+        executionTime: 0,
+        memoryUsed: 0,
+        exitCode: 1,
+        status: "error",
+      };
   }
 };

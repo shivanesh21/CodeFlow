@@ -20,6 +20,7 @@
   "author": "Shivanesh",
   "license": "MIT",
   "dependencies": {
+    "@napi-rs/snappy": "^1.0.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

@@ -1,0 +1,45 @@
+.run-button{
+
+    background:#16a34a;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 24px;
+
+    border-radius:8px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.3s;
+
+}
+
+@media(max-width:768px){
+
+    .run-button{
+
+        width:100%;
+
+    }
+
+}
+
+.run-button:hover{
+
+    background:#15803d;
+
+}
+
+.run-button:disabled{
+
+    background:#94a3b8;
+
+    cursor:not-allowed;
+
+}

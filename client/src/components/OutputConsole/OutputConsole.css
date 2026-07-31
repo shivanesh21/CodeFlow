@@ -1,0 +1,49 @@
+.output-console{
+
+    margin-top:20px;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+
+.console-header{
+
+    background:#1e293b;
+
+    color:white;
+
+    padding:12px 20px;
+
+}
+
+.console-body{
+
+    background:#0f172a;
+
+    color:#22c55e;
+
+    min-height:150px;
+
+    padding:20px;
+
+    font-family:Consolas, monospace;
+
+    font-size:15px;
+
+    overflow:auto;
+
+}
+
+.console-body pre{
+
+    margin:0;
+
+    white-space:pre-wrap;
+
+    word-wrap:break-word;
+
+}

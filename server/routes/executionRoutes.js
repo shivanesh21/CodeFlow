@@ -1,29 +1,34 @@
 import express from "express";
 
 import {
-  executeCode,
+  runCode,
   getExecutionHistory,
   getExecutionById,
   deleteExecution,
+  clearExecutionHistory,
+  getExecutionStats,
 } from "../controllers/executionController.js";
 
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, optionalProtect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// All execution routes require authentication
-router.use(protect);
+// Execute Code (Supports saving history for authenticated users or running as guest)
+router.post("/", optionalProtect, runCode);
 
-// Execute Code
-router.post("/", executeCode);
+// History
+router.get("/history", protect, getExecutionHistory);
 
-// Execution History
-router.get("/history", getExecutionHistory);
+// Statistics
+router.get("/stats", protect, getExecutionStats);
+
+// Clear All History
+router.delete("/history/clear", protect, clearExecutionHistory);
 
 // Single Execution
-router.get("/:id", getExecutionById);
+router.get("/:id", protect, getExecutionById);
 
-// Delete Execution
-router.delete("/:id", deleteExecution);
+// Delete Single Execution
+router.delete("/:id", protect, deleteExecution);
 
 export default router;

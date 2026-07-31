@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
-import codeSnippetRoutes from "./routes/codeSnippetRoutes.js";
+import codeSnippetRoutes from "./routes/CodeSnippetRoutes.js";
 import executionRoutes from "./routes/executionRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import visualizerRoutes from "./routes/visualizerRoutes.js";
 
 const app = express();
 
@@ -11,30 +13,28 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Home Route
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: "🚀 Welcome to CodeFlow Backend API",
+    message: "Welcome to CodeFlow Backend API",
     version: "1.0.0",
   });
 });
 
-// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/snippets", codeSnippetRoutes);
 app.use("/api/execute", executionRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/visualizer", visualizerRoutes);
 
-// Health Check
 app.get("/api/health", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    status: "Server Running",
+    status: "Running",
     timestamp: new Date(),
   });
 });
 
-// 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -42,7 +42,6 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err);
 

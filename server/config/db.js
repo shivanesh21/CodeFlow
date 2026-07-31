@@ -1,41 +1,81 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Persistent data directory on disk — data survives server restarts
+const DATA_DIR = path.resolve(__dirname, "../../.mongo_data");
+
+const ensureDataDir = () => {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    console.log(`📁 Created MongoDB data directory: ${DATA_DIR}`);
+  }
+};
 
 let mongoServer;
 
-const getMongoUri = () => {
-  const configuredUri = process.env.MONGO_URI?.trim();
-
-  if (!configuredUri || configuredUri.includes("<") || configuredUri === "PORT=5000") {
-    return null;
-  }
-
-  if (/^mongodb:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i.test(configuredUri)) {
-    return null;
-  }
-
-  return configuredUri;
-};
-
 const connectDB = async () => {
+  // --- Option 1: Connect to real local MongoDB if available ---
+  const REAL_URI = "mongodb://127.0.0.1:27017/codeflow";
+
   try {
-    let mongoUri = getMongoUri();
+    console.log(`🔌 Trying local MongoDB at 127.0.0.1:27017...`);
+    await mongoose.connect(REAL_URI, {
+      serverSelectionTimeoutMS: 3000,
+    });
+    const host = mongoose.connection.host;
+    console.log(`✅ Connected to local MongoDB: ${host}/codeflow`);
+    console.log(`💡 MongoDB Compass URI: ${REAL_URI}`);
+    return;
+  } catch (_) {
+    console.warn(`⚠️  Local MongoDB not running. Using embedded persistent MongoDB...`);
+    try {
+      await mongoose.disconnect();
+    } catch (_2) {}
+  }
 
-    if (!mongoUri) {
-      console.warn("⚠️ No reachable MongoDB URI configured. Starting an embedded MongoDB instance for development.");
-      mongoServer = await MongoMemoryServer.create({ instance: { dbName: "codeflow" } });
-      mongoUri = mongoServer.getUri();
-    }
+  // --- Option 2: Embedded MongoDB on fixed port 27018 with disk persistence ---
+  try {
+    ensureDataDir();
 
-    const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 8000,
+    mongoServer = await MongoMemoryServer.create({
+      instance: {
+        port: 27018,              // Fixed port so Compass always connects at same address
+        dbName: "codeflow",
+        dbPath: DATA_DIR,         // Persist to disk so data survives restarts
+        storageEngine: "wiredTiger",
+      },
     });
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    const uri = mongoServer.getUri("codeflow");
+    await mongoose.connect(uri);
+
+    console.log(`✅ Embedded MongoDB (persistent) running on port 27018`);
+    console.log(`📂 Data stored at: ${DATA_DIR}`);
+    console.log(`\n💡 MongoDB Compass Connection String:`);
+    console.log(`   mongodb://127.0.0.1:27018/codeflow\n`);
   } catch (error) {
-    console.error("❌ MongoDB Connection Failed");
-    console.error(error.message);
-    process.exit(1);
+    // If port 27018 is busy or dbPath conflicts, try without dbPath
+    console.warn("⚠️  Persistent DB failed, trying ephemeral fallback:", error.message);
+    try {
+      await mongoose.disconnect();
+    } catch (_) {}
+
+    mongoServer = await MongoMemoryServer.create({
+      instance: { port: 27018, dbName: "codeflow" },
+    });
+
+    const uri = mongoServer.getUri("codeflow");
+    await mongoose.connect(uri);
+
+    console.log(`⚡ Embedded MongoDB (ephemeral) running on port 27018`);
+    console.warn(`⚠️  Data will NOT persist across server restarts.`);
+    console.log(`💡 MongoDB Compass URI: mongodb://127.0.0.1:27018/codeflow`);
   }
 };
 

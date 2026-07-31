@@ -1,0 +1,135 @@
+/* TopToolbar.css – Visualizer Control Bar */
+
+.viz-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(13, 17, 23, 0.97);
+  border-bottom: 1px solid #21262d;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-section.center {
+  gap: 6px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.83rem;
+  color: #8b949e;
+}
+
+.viz-select {
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.viz-select:focus,
+.viz-select:hover {
+  border-color: #58a6ff;
+}
+
+/* Buttons */
+.viz-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  background: #161b22;
+  color: #c9d1d9;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Inter", sans-serif;
+}
+
+.viz-btn:hover:not(:disabled) {
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+.viz-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.viz-btn.primary,
+.visualize-btn {
+  background: linear-gradient(135deg, #1a3a5c, #0d2137);
+  color: #58a6ff;
+  border-color: rgba(88, 166, 255, 0.4);
+  box-shadow: 0 0 10px rgba(88, 166, 255, 0.15);
+}
+
+.viz-btn.primary:hover:not(:disabled),
+.visualize-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1f4a7a, #142d4a);
+  border-color: #58a6ff;
+  box-shadow: 0 0 18px rgba(88, 166, 255, 0.35);
+  color: #fff;
+}
+
+.icon-btn {
+  padding: 6px 10px;
+}
+
+.play-pause-btn {
+  min-width: 88px;
+  justify-content: center;
+}
+
+/* Step counter */
+.step-counter {
+  font-size: 0.82rem;
+  color: #8b949e;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(22, 27, 34, 0.7);
+  border: 1px solid #21262d;
+}
+
+.step-counter span {
+  color: #58a6ff;
+  font-weight: 700;
+}
+
+/* Speed control */
+.speed-group {
+  gap: 8px;
+}
+
+.speed-slider {
+  width: 80px;
+  accent-color: #58a6ff;
+  cursor: pointer;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  padding: 6px 10px;
+  font-size: 1rem;
+}

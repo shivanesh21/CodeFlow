@@ -1,0 +1,54 @@
+.language-selector{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.language-selector label{
+
+    font-weight:bold;
+
+    color:#1e293b;
+
+}
+
+.language-selector select{
+
+    width:180px;
+
+    padding:10px;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    background:white;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+}
+
+@media(max-width:768px){
+
+    .language-selector,
+    .language-selector select{
+
+        width:100%;
+
+    }
+
+}
+
+.language-selector select:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+}
