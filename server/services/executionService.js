@@ -239,6 +239,39 @@ export const executeCpp = async (code, input = "") => {
 };
 
 // =======================================================
+// C Execution
+// =======================================================
+export const executeC = async (code, input = "") => {
+  await ensureTempDir();
+  const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const filePath = path.join(TEMP_DIR, `c_${uniqueId}.c`);
+  const exeName = process.platform === "win32" ? `c_${uniqueId}.exe` : `./c_${uniqueId}.out`;
+  const exePath = path.join(TEMP_DIR, exeName);
+
+  try {
+    await fs.writeFile(filePath, code, "utf8");
+
+    const compileResult = await runProcess("gcc", ["-O2", filePath, "-o", exePath], { cwd: TEMP_DIR });
+    if (!compileResult.success) {
+      return {
+        success: false,
+        output: "",
+        error: compileResult.error || compileResult.output || "C Compilation Error",
+        executionTime: compileResult.executionTime,
+        memoryUsed: 0,
+        exitCode: 1,
+        status: "compilation_error",
+      };
+    }
+
+    const runCmd = process.platform === "win32" ? exePath : `./${path.basename(exePath)}`;
+    return await runProcess(runCmd, [], { cwd: TEMP_DIR }, input);
+  } finally {
+    await cleanUpTempFiles([filePath, exePath]);
+  }
+};
+
+// =======================================================
 // Master Dispatcher function
 // =======================================================
 export const executeCode = async (language, code, input = "") => {
@@ -273,11 +306,14 @@ export const executeCode = async (language, code, input = "") => {
     case "c_cpp":
       return await executeCpp(code, input);
 
+    case "c":
+      return await executeC(code, input);
+
     default:
       return {
         success: false,
         output: "",
-        error: `Unsupported language: '${language}'. Supported: JavaScript, Python, Java, C++.`,
+        error: `Unsupported language: '${language}'. Supported: JavaScript, Python, Java, C++, C.`,
         executionTime: 0,
         memoryUsed: 0,
         exitCode: 1,

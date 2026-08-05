@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { VisualizerProvider, useVisualizer } from "../../context/VisualizerContext";
 import TopToolbar from "../../components/visualization/TopToolbar";
 import VariableTable from "../../components/visualization/VariableTable";
+import ArrayVisualizer from "../../components/visualization/ArrayVisualizer";
+import DataStructureStackVisualizer from "../../components/visualization/DataStructureStackVisualizer";
+import QueueVisualizer from "../../components/visualization/QueueVisualizer";
 import StackVisualizer from "../../components/visualization/StackVisualizer";
 import HeapVisualizer from "../../components/visualization/HeapVisualizer";
 import ConsoleOutput from "../../components/visualization/ConsoleOutput";
@@ -46,7 +49,24 @@ function VisualizerCanvas({ initialCode, initialLanguage }) {
     }
   }, []); // eslint-disable-line
 
+  /* Auto-switch tab based on current step's concept type */
+  useEffect(() => {
+    if (currentSnapshot?.conceptType) {
+      const type = currentSnapshot.conceptType.toUpperCase();
+      if (type.includes("STACK")) {
+        setActiveTab("dsStack");
+      } else if (type.includes("QUEUE")) {
+        setActiveTab("queue");
+      } else if (type.includes("ARRAY")) {
+        setActiveTab("array");
+      }
+    }
+  }, [currentSnapshot, currentStepIndex]); // eslint-disable-line
+
   const TABS = [
+    { id: "array",     label: "🔢 Array" },
+    { id: "dsStack",   label: "🥞 Stack (LIFO)" },
+    { id: "queue",     label: "📬 Queue (FIFO)" },
     { id: "variables", label: "📦 Variables" },
     { id: "stack",     label: "🗂 Call Stack" },
     { id: "heap",      label: "🧠 Heap Memory" },
@@ -60,7 +80,7 @@ function VisualizerCanvas({ initialCode, initialLanguage }) {
         <div className="viz-page-title">
           <span className="viz-logo">⚡</span>
           <h1>Code Visualizer</h1>
-          <span className="viz-badge">Step-by-Step Execution</span>
+          <span className="viz-badge">Array • Stack • Queue Execution</span>
         </div>
         <button
           className="viz-back-btn"
@@ -110,6 +130,9 @@ function VisualizerCanvas({ initialCode, initialLanguage }) {
 
           {/* Tab content */}
           <div className="viz-tab-content">
+            {activeTab === "array"     && <ArrayVisualizer />}
+            {activeTab === "dsStack"   && <DataStructureStackVisualizer />}
+            {activeTab === "queue"     && <QueueVisualizer />}
             {activeTab === "variables" && <VariableTable />}
             {activeTab === "stack"     && <StackVisualizer />}
             {activeTab === "heap"      && <HeapVisualizer />}

@@ -340,3 +340,45 @@
   align-items: center;
   gap: 1.2rem;
 }
+
+.snippets-page-container,
+.snippets-title,
+.snippet-card-title {
+  color: var(--text-main);
+}
+
+.snippets-subtitle,
+.snippet-card-desc,
+.snippet-dates-meta,
+.filter-group label,
+.form-group label {
+  color: var(--text-muted);
+}
+
+.snippet-card,
+.snippet-state-card,
+.search-input,
+.filter-select,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.snippet-code-box,
+.tag-pill {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.edit-btn,
+.duplicate-btn {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.snippet-dates-meta {
+  border-color: var(--border-color);
+}

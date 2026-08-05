@@ -66,7 +66,7 @@ int main() {
   c: {
     name: "C",
     defaultCode: `// CodeFlow Interactive Execution - C
-#include <stdio.stdio.h>
+#include <stdio.h>
 
 int main() {
     printf("Hello, Developer! Welcome to CodeFlow.\\n");

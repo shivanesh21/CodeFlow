@@ -190,6 +190,7 @@
   flex-shrink: 0;
   border-bottom: 1px solid var(--vp-border);
   padding-bottom: 8px;
+  overflow-x: auto;
 }
 
 .viz-tab-btn {
@@ -241,12 +242,29 @@
 
 /* ─── Responsive ─── */
 @media (max-width: 900px) {
+  .visualizer-page {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .viz-page-header,
+  .viz-page-title {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
   .viz-body {
     grid-template-columns: 1fr;
     grid-template-rows: 45vh 1fr;
+    overflow: visible;
   }
   .viz-code-panel {
     border-right: none;
     border-bottom: 1px solid var(--vp-border);
+  }
+
+  .viz-detail-panel {
+    min-height: 50vh;
   }
 }

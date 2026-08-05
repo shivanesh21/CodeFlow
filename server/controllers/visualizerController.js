@@ -27,8 +27,8 @@ function generateTraceSnapshots(code, language) {
       varMatch = trimmed.match(/^(?:let|const|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+);?$/);
     } else if (language === "python") {
       varMatch = trimmed.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+)$/);
-    } else if (language === "java" || language === "cpp") {
-      varMatch = trimmed.match(/^(?:int|double|float|boolean|String|char|auto)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+);?$/);
+    } else if (language === "java" || language === "cpp" || language === "c") {
+      varMatch = trimmed.match(/^(?:int|double|float|boolean|String|char|auto|bool|long|short)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+);?$/);
     }
 
     if (varMatch) {
@@ -65,7 +65,7 @@ function generateTraceSnapshots(code, language) {
     }
 
     // Console / Print statements
-    const printMatch = trimmed.match(/(?:console\.log|print|System\.out\.println|std::cout\s*<<)\s*\(?([^;]+)\)?/);
+    const printMatch = trimmed.match(/(?:console\.log|print|System\.out\.println|printf|std::cout\s*<<)\s*\(?([^;]+)\)?/);
     if (printMatch) {
       let printContent = printMatch[1].replace(/;$/, "").replace(/<<\s*std::endl/, "").trim();
       if (variableStore[printContent]) {

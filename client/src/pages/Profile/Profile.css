@@ -165,3 +165,36 @@
     grid-template-columns: 1fr;
   }
 }
+
+.profile-container,
+.profile-title,
+.profile-card h3,
+.user-name {
+  color: var(--text-main);
+}
+
+.profile-subtitle,
+.user-meta,
+.preset-label {
+  color: var(--text-muted);
+}
+
+.profile-state-card,
+.profile-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.profile-avatar {
+  background: var(--bg-primary);
+}
+
+.user-bio {
+  color: var(--text-muted);
+}
+
+.profile-card h3,
+.user-meta,
+.preset-avatar {
+  border-color: var(--border-color);
+}

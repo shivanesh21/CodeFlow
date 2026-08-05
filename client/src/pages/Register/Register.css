@@ -1,7 +1,7 @@
 body{
     margin:0;
     font-family:Arial, Helvetica, sans-serif;
-    background:#f4f6f9;
+    background:var(--bg-primary);
 }
 
 .register-container{
@@ -13,7 +13,8 @@ body{
 
 .register-card{
     width:400px;
-    background:white;
+    background:var(--bg-card);
+    color:var(--text-main);
     padding:35px;
     border-radius:12px;
     box-shadow:0 0 20px rgba(0,0,0,.15);
@@ -27,14 +28,17 @@ body{
 .register-card h2{
     text-align:center;
     margin-bottom:25px;
+    color:var(--text-main);
 }
 
 .register-card input{
     width:100%;
     padding:12px;
     margin-bottom:15px;
-    border:1px solid #ccc;
+    border:1px solid var(--border-color);
     border-radius:6px;
+    background:var(--input-bg);
+    color:var(--text-main);
     box-sizing:border-box;
 }
 
@@ -55,6 +59,7 @@ body{
 
 .register-card p{
     text-align:center;
+    color:var(--text-muted);
 }
 
 .register-card a{

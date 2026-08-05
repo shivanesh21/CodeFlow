@@ -6,7 +6,8 @@ function LanguageSelector({ language, setLanguage }) {
         "javascript",
         "python",
         "java",
-        "cpp"
+        "cpp",
+        "c"
     ];
 
     return (

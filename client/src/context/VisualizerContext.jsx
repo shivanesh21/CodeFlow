@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { generateJsSnapshots } from "../utils/jsTraceEngine";
 import { CONCEPT_PRESETS } from "../utils/conceptPresets";
-import axios from "axios";
+import API from "../services/api";
+import { useTheme } from "./ThemeContext";
 
 const VisualizerContext = createContext();
 
 export const VisualizerProvider = ({ children }) => {
+  const { theme, toggleTheme } = useTheme();
   const [language, setLanguage] = useState("javascript");
   const [conceptLevel, setConceptLevel] = useState("level1");
   const [code, setCode] = useState(CONCEPT_PRESETS.javascript.level1.code);
@@ -14,7 +16,6 @@ export const VisualizerProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1); // 1x, 2x, 0.5x multiplier
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [visualizerTheme, setVisualizerTheme] = useState("dark");
   const [activeTab, setActiveTab] = useState("variables"); // variables | stack | heap | console | timeline
 
   const playTimerRef = useRef(null);
@@ -40,7 +41,7 @@ export const VisualizerProvider = ({ children }) => {
         setSnapshots(jsSnaps);
       } else {
         // Multi-language backend execution service
-        const response = await axios.post("/api/visualizer/trace", {
+        const response = await API.post("/visualizer/trace", {
           code,
           language,
         });
@@ -48,13 +49,32 @@ export const VisualizerProvider = ({ children }) => {
         if (response.data && response.data.snapshots) {
           setSnapshots(response.data.snapshots);
         } else {
-          // Fallback to JS engine trace
-          setSnapshots(generateJsSnapshots(code));
+          setSnapshots([]);
         }
       }
     } catch (error) {
-      console.warn("Backend trace service unavailable, utilizing client AST engine:", error);
-      setSnapshots(generateJsSnapshots(code));
+      console.warn("Trace service unavailable:", error);
+      setSnapshots(
+        language === "javascript"
+          ? generateJsSnapshots(code)
+          : [
+              {
+                stepIndex: 0,
+                currentLine: 1,
+                lineCode: "",
+                explanation: `Could not generate a ${language.toUpperCase()} trace. Please make sure the backend server is running.`,
+                conceptType: "TRACE_ERROR",
+                variables: {},
+                objects: {},
+                arrays: {},
+                callStack: [],
+                heap: [],
+                pointers: [],
+                consoleOutput: [],
+                executionTimeMs: 0,
+              },
+            ]
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -101,9 +121,7 @@ export const VisualizerProvider = ({ children }) => {
     setCurrentStepIndex(0);
   }, []);
 
-  const toggleVisualizerTheme = () => {
-    setVisualizerTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
+  const toggleVisualizerTheme = toggleTheme;
 
   // Auto playback interval effect
   useEffect(() => {
@@ -152,7 +170,7 @@ export const VisualizerProvider = ({ children }) => {
         speed,
         setSpeed,
         isAnalyzing,
-        visualizerTheme,
+        visualizerTheme: theme,
         activeTab,
         setActiveTab,
         loadPreset,

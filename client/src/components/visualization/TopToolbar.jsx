@@ -1,6 +1,7 @@
 import React from "react";
 import { useVisualizer } from "../../context/VisualizerContext";
 import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaRedo, FaRocket, FaSun, FaMoon } from "react-icons/fa";
+import { CONCEPT_PRESETS } from "../../utils/conceptPresets";
 import "./TopToolbar.css";
 
 function TopToolbar() {
@@ -28,7 +29,8 @@ function TopToolbar() {
 
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
-    loadPreset(newLang, conceptLevel);
+    const nextLevel = CONCEPT_PRESETS[newLang]?.[conceptLevel] ? conceptLevel : "level1";
+    loadPreset(newLang, nextLevel);
   };
 
   const handleConceptChange = (e) => {
@@ -52,6 +54,7 @@ function TopToolbar() {
             <option value="python">Python</option>
             <option value="java">Java</option>
             <option value="cpp">C++</option>
+            <option value="c">C</option>
           </select>
         </div>
 
@@ -63,15 +66,11 @@ function TopToolbar() {
             onChange={handleConceptChange}
             className="viz-select"
           >
-            <option value="level1">Level 1: Variables & Primitives</option>
-            <option value="level2">Level 2: Type Coercion & Operators</option>
-            <option value="level3">Level 3: Branching (if/else)</option>
-            <option value="level4">Level 4: Loops (for/while/do-while)</option>
-            <option value="level5">Level 5: Functions & Recursion</option>
-            <option value="level6">Level 6: String Methods</option>
-            <option value="level7">Level 7: Objects & Arrays</option>
-            <option value="level8">Level 8: Async / Promises / await</option>
-            <option value="level9">Level 9: Closures & this</option>
+            {Object.entries(CONCEPT_PRESETS[language] || {}).map(([level, preset]) => (
+              <option key={level} value={level}>
+                {preset.label}
+              </option>
+            ))}
           </select>
         </div>
 

@@ -109,19 +109,91 @@ console.log(replaced);
 console.log(joined);`,
     },
     level7: {
-      label: "Level 7: Objects & Arrays",
-      code: `let fruits = ["apple", "banana", "cherry"];
-fruits.push("date");
-let removed = fruits.pop();
-console.log(fruits);
+      label: "Level 7: Array Data Structure",
+      code: `// Array Visualization - Contiguous Memory & Operations
+let arr = [10, 20, 30];
 
-let person = { name: "Alice", age: 25, city: "NYC" };
+// Push element to end
+arr.push(40);
+arr.push(50);
+
+// Modify element at index 2
+arr[2] = 99;
+
+// Unshift element to front
+arr.unshift(5);
+
+// Pop element from end
+let popped = arr.pop();
+console.log("Popped element:", popped);
+
+// Shift element from front
+let shifted = arr.shift();
+console.log("Shifted element:", shifted);
+
+console.log("Final Array:", arr);`,
+    },
+    level8: {
+      label: "Level 8: Stack Data Structure (LIFO)",
+      code: `// Stack Data Structure - Last In, First Out (LIFO)
+let stack = [];
+
+// Push items onto top of stack
+stack.push(10);
+stack.push(20);
+stack.push(30);
+console.log("Stack after pushes:", stack);
+
+// Peek top element
+let topElement = stack[stack.length - 1];
+console.log("Top element:", topElement);
+
+// Pop items from top of stack
+let popped1 = stack.pop();
+console.log("Popped from stack:", popped1);
+
+let popped2 = stack.pop();
+console.log("Popped from stack:", popped2);
+
+// Push new item
+stack.push(99);
+console.log("Final Stack state:", stack);`,
+    },
+    level9: {
+      label: "Level 9: Queue Data Structure (FIFO)",
+      code: `// Queue Data Structure - First In, First Out (FIFO)
+let queue = [];
+
+// Enqueue items to the rear of queue
+queue.push("Order #101");
+queue.push("Order #102");
+queue.push("Order #103");
+console.log("Queue after enqueues:", queue);
+
+// Peek front element
+let frontOrder = queue[0];
+console.log("Front order:", frontOrder);
+
+// Dequeue items from the front of queue
+let served1 = queue.shift();
+console.log("Served (Dequeued):", served1);
+
+let served2 = queue.shift();
+console.log("Served (Dequeued):", served2);
+
+// Enqueue new order to rear
+queue.push("Order #104");
+console.log("Final Queue state:", queue);`,
+    },
+    level10: {
+      label: "Level 10: Objects & References",
+      code: `let person = { name: "Alice", age: 25, city: "NYC" };
 person.age = 26;
 person.email = "alice@example.com";
 console.log(person.name);`,
     },
-    level8: {
-      label: "Level 8: Async / Promises / await",
+    level11: {
+      label: "Level 11: Async / Promises / await",
       code: `let status = "starting";
 console.log(status);
 
@@ -139,8 +211,8 @@ async function fetchData() {
 fetchData();
 console.log("after fetchData call");`,
     },
-    level9: {
-      label: "Level 9: Closures & this",
+    level12: {
+      label: "Level 12: Closures & this",
       code: `function makeCounter() {
   let count = 0;
   function increment() {
@@ -167,6 +239,43 @@ score = age * 2
 print(name)
 print(score)`,
     },
+    level7: {
+      label: "Level 7: Array / List Data Structure",
+      code: `# Python List (Array) Data Structure
+arr = [10, 20, 30]
+arr.append(40)
+arr.append(50)
+arr[2] = 99
+popped = arr.pop()
+print("Popped:", popped)
+print("Final List:", arr)`,
+    },
+    level8: {
+      label: "Level 8: Stack (LIFO)",
+      code: `# Python Stack Implementation (LIFO)
+stack = []
+stack.append(10)
+stack.append(20)
+stack.append(30)
+top_item = stack[-1]
+popped_item = stack.pop()
+print("Top:", top_item)
+print("Popped:", popped_item)
+print("Stack:", stack)`,
+    },
+    level9: {
+      label: "Level 9: Queue (FIFO)",
+      code: `# Python Queue Implementation (FIFO)
+queue = []
+queue.append("Task A")
+queue.append("Task B")
+queue.append("Task C")
+front_item = queue[0]
+dequeued_item = queue.pop(0)
+print("Front:", front_item)
+print("Dequeued:", dequeued_item)
+print("Queue:", queue)`,
+    },
   },
   java: {
     level1: {
@@ -178,6 +287,24 @@ boolean isStudent = true;
 int score = age * 2;
 System.out.println(name);
 System.out.println(score);`,
+    },
+    level7: {
+      label: "Level 7: Array Operations",
+      code: `int[] arr = {10, 20, 30, 40, 50};
+arr[2] = 99;
+System.out.println(arr[2]);`,
+    },
+    level8: {
+      label: "Level 8: Stack (LIFO)",
+      code: `int[] stack = {10, 20, 30};
+int top = stack[stack.length - 1];
+System.out.println("Top: " + top);`,
+    },
+    level9: {
+      label: "Level 9: Queue (FIFO)",
+      code: `int[] queue = {10, 20, 30};
+int front = queue[0];
+System.out.println("Front: " + front);`,
     },
   },
   cpp: {
@@ -194,6 +321,105 @@ int main() {
     int score = age * 2;
     cout << name << endl;
     cout << score << endl;
+    return 0;
+}`,
+    },
+    level7: {
+      label: "Level 7: Array Operations",
+      code: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> arr = {10, 20, 30};
+    arr.push_back(40);
+    arr[2] = 99;
+    arr.pop_back();
+    return 0;
+}`,
+    },
+    level8: {
+      label: "Level 8: Stack (LIFO)",
+      code: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> stack;
+    stack.push_back(10);
+    stack.push_back(20);
+    stack.push_back(30);
+    int top = stack.back();
+    stack.pop_back();
+    return 0;
+}`,
+    },
+    level9: {
+      label: "Level 9: Queue (FIFO)",
+      code: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> queue;
+    queue.push_back(10);
+    queue.push_back(20);
+    int front = queue.front();
+    queue.erase(queue.begin());
+    return 0;
+}`,
+    },
+  },
+  c: {
+    level1: {
+      label: "Level 1: Variables & Primitives",
+      code: `#include <stdio.h>
+
+int main() {
+    char name[] = "Alice";
+    int age = 25;
+    double pi = 3.14159;
+    int score = age * 2;
+    printf("%s\\n", name);
+    printf("%d\\n", score);
+    return 0;
+}`,
+    },
+    level7: {
+      label: "Level 7: Array Operations",
+      code: `#include <stdio.h>
+
+int main() {
+    int arr[] = {10, 20, 30, 40, 50};
+    arr[2] = 99;
+    printf("%d\\n", arr[2]);
+    return 0;
+}`,
+    },
+    level8: {
+      label: "Level 8: Stack (LIFO)",
+      code: `#include <stdio.h>
+
+int main() {
+    int stack[5];
+    int top = -1;
+    stack[++top] = 10;
+    stack[++top] = 20;
+    stack[++top] = 30;
+    printf("Top: %d\\n", stack[top]);
+    top--;
+    return 0;
+}`,
+    },
+    level9: {
+      label: "Level 9: Queue (FIFO)",
+      code: `#include <stdio.h>
+
+int main() {
+    int queue[] = {10, 20, 30};
+    int front = 0;
+    printf("Front: %d\\n", queue[front]);
+    front++;
     return 0;
 }`,
     },

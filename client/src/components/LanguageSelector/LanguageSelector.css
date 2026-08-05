@@ -12,7 +12,7 @@
 
     font-weight:bold;
 
-    color:#1e293b;
+    color:var(--text-muted);
 
 }
 
@@ -22,11 +22,13 @@
 
     padding:10px;
 
-    border:1px solid #ccc;
+    border:1px solid var(--border-color);
 
     border-radius:6px;
 
-    background:white;
+    background:var(--input-bg);
+
+    color:var(--text-main);
 
     font-size:15px;
 
@@ -49,6 +51,6 @@
 
     outline:none;
 
-    border-color:#2563eb;
+    border-color:var(--accent-primary);
 
 }

@@ -460,8 +460,8 @@ export function generateJsSnapshots(code) {
       return;
     }
 
-    // ── ARRAY METHOD CALL ────────────────────────────────────────
-    const arrMethodMatch = t.match(/^(?:(?:let|const|var)\s+([a-zA-Z_$]\w*)\s*=\s*)?([a-zA-Z_$]\w*)\.(push|pop|shift|unshift|splice|reverse|sort|indexOf|includes|find|filter|map|forEach|join|slice|concat)\(([^)]*)\);?$/);
+    // ── ARRAY / STACK / QUEUE METHOD CALL ────────────────────────
+    const arrMethodMatch = t.match(/^(?:(?:let|const|var)\s+([a-zA-Z_$]\w*)\s*=\s*)?([a-zA-Z_$]\w*)\.(push|pop|shift|unshift|enqueue|dequeue|peek|splice|reverse|sort|indexOf|includes|find|filter|map|forEach|join|slice|concat)\(([^)]*)\);?$/);
     if (arrMethodMatch) {
       const resultVar = arrMethodMatch[1];
       const arrName   = arrMethodMatch[2];
@@ -477,10 +477,13 @@ export function generateJsSnapshots(code) {
 
         // Execute method
         switch (method) {
-          case "push":    methodResult = arrays[arrName].push(...argVals); break;
+          case "push":
+          case "enqueue": methodResult = arrays[arrName].push(...argVals); break;
           case "pop":     methodResult = arrays[arrName].pop(); break;
-          case "shift":   methodResult = arrays[arrName].shift(); break;
+          case "shift":
+          case "dequeue": methodResult = arrays[arrName].shift(); break;
           case "unshift": methodResult = arrays[arrName].unshift(...argVals); break;
+          case "peek":    methodResult = arrays[arrName][arrays[arrName].length - 1]; break;
           case "reverse": arrays[arrName].reverse(); methodResult = arrays[arrName]; break;
           case "sort":    arrays[arrName].sort(); methodResult = arrays[arrName]; break;
           case "indexOf": methodResult = arrays[arrName].indexOf(argVals[0]); break;
@@ -503,8 +506,24 @@ export function generateJsSnapshots(code) {
           vars[resultVar] = { name: resultVar, value: methodResult, type: typeLabel(methodResult), memoryAddr: addr, kind: "let", isMutated: false, declaredAtLine: lineNumber };
         }
 
-        pushSnap(lineNumber, t, "ARRAY_METHOD",
-          `${arrName}.${method}(${argsStr}): [${before.map(v => JSON.stringify(v)).join(",")}] → [${arrays[arrName].map(v => JSON.stringify(v)).join(",")}].${resultVar ? ` Returned: ${JSON.stringify(methodResult)}` : ""}`,
+        // Determine specific concept type
+        let conceptType = "ARRAY_METHOD";
+        const lowerName = arrName.toLowerCase();
+        if (lowerName.includes("stack") || lowerName.includes("stk")) {
+          conceptType = "STACK_OPERATION";
+        } else if (lowerName.includes("queue") || method === "enqueue" || method === "dequeue") {
+          conceptType = "QUEUE_OPERATION";
+        }
+
+        let explanation = `${arrName}.${method}(${argsStr}): [${before.map(v => JSON.stringify(v)).join(", ")}] → [${arrays[arrName].map(v => JSON.stringify(v)).join(", ")}].`;
+        if (conceptType === "STACK_OPERATION") {
+          explanation = `Stack (${arrName}) ${method.toUpperCase()} operation: Top element updated. ${arrName} = [${arrays[arrName].map(v => JSON.stringify(v)).join(", ")}].`;
+        } else if (conceptType === "QUEUE_OPERATION") {
+          explanation = `Queue (${arrName}) ${method.toUpperCase()} operation: Front/Rear pointers updated. ${arrName} = [${arrays[arrName].map(v => JSON.stringify(v)).join(", ")}].`;
+        }
+
+        pushSnap(lineNumber, t, conceptType,
+          `${explanation}${resultVar ? ` Returned: ${JSON.stringify(methodResult)}` : ""}`,
           { mutatedVar: arrName });
         return;
       }

@@ -268,3 +268,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+[data-theme="light"] .dashboard-container,
+[data-theme="dark"] .dashboard-container {
+  color: var(--text-main);
+}
+
+.dashboard-title,
+.stat-value,
+.chart-card h3,
+.activity-card-header h3,
+.activity-title {
+  color: var(--text-main);
+}
+
+.dashboard-subtitle,
+.stat-label,
+.activity-snippet,
+.activity-date {
+  color: var(--text-muted);
+}
+
+.dashboard-state-card,
+.stat-card,
+.chart-card,
+.recent-activity-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.activity-item,
+.no-chart-data {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}

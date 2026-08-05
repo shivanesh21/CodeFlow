@@ -5,8 +5,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background: rgba(13, 17, 23, 0.97);
-  border-bottom: 1px solid #21262d;
+  background: var(--vp-header-bg);
+  border-bottom: 1px solid var(--vp-border);
   flex-wrap: wrap;
   gap: 10px;
   flex-shrink: 0;
@@ -29,13 +29,13 @@
   align-items: center;
   gap: 7px;
   font-size: 0.83rem;
-  color: #8b949e;
+  color: var(--vp-muted);
 }
 
 .viz-select {
-  background: #161b22;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  background: var(--vp-card);
+  border: 1px solid var(--vp-border);
+  color: var(--vp-text);
   padding: 5px 10px;
   border-radius: 7px;
   font-size: 0.82rem;
@@ -46,7 +46,7 @@
 
 .viz-select:focus,
 .viz-select:hover {
-  border-color: #58a6ff;
+  border-color: var(--vp-accent);
 }
 
 /* Buttons */
@@ -56,9 +56,9 @@
   gap: 6px;
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid #30363d;
-  background: #161b22;
-  color: #c9d1d9;
+  border: 1px solid var(--vp-border);
+  background: var(--vp-card);
+  color: var(--vp-text);
   font-size: 0.83rem;
   font-weight: 600;
   cursor: pointer;
@@ -67,8 +67,8 @@
 }
 
 .viz-btn:hover:not(:disabled) {
-  border-color: #58a6ff;
-  color: #58a6ff;
+  border-color: var(--vp-accent);
+  color: var(--vp-accent);
 }
 
 .viz-btn:disabled {
@@ -79,7 +79,7 @@
 .viz-btn.primary,
 .visualize-btn {
   background: linear-gradient(135deg, #1a3a5c, #0d2137);
-  color: #58a6ff;
+  color: var(--vp-accent);
   border-color: rgba(88, 166, 255, 0.4);
   box-shadow: 0 0 10px rgba(88, 166, 255, 0.15);
 }
@@ -87,7 +87,7 @@
 .viz-btn.primary:hover:not(:disabled),
 .visualize-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #1f4a7a, #142d4a);
-  border-color: #58a6ff;
+  border-color: var(--vp-accent);
   box-shadow: 0 0 18px rgba(88, 166, 255, 0.35);
   color: #fff;
 }
@@ -104,16 +104,16 @@
 /* Step counter */
 .step-counter {
   font-size: 0.82rem;
-  color: #8b949e;
+  color: var(--vp-muted);
   white-space: nowrap;
   padding: 4px 10px;
   border-radius: 6px;
-  background: rgba(22, 27, 34, 0.7);
-  border: 1px solid #21262d;
+  background: var(--vp-card);
+  border: 1px solid var(--vp-border);
 }
 
 .step-counter span {
-  color: #58a6ff;
+  color: var(--vp-accent);
   font-weight: 700;
 }
 
@@ -124,7 +124,7 @@
 
 .speed-slider {
   width: 80px;
-  accent-color: #58a6ff;
+  accent-color: var(--vp-accent);
   cursor: pointer;
 }
 

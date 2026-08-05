@@ -396,3 +396,46 @@
 .empty-icon {
   font-size: 3.5rem;
 }
+
+.history-page-container,
+.history-title,
+.activity-title,
+.page-indicator strong {
+  color: var(--text-main);
+}
+
+.history-subtitle,
+.timestamp-info,
+.block-label,
+.page-indicator,
+.select-wrapper label {
+  color: var(--text-muted);
+}
+
+.history-card,
+.pagination-bar,
+.history-state-card,
+.search-input,
+.control-select {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.code-preview-text,
+.output-preview-text,
+.metric-pill {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.secondary-btn,
+.page-btn {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.card-top-bar,
+.card-actions-bar {
+  border-color: var(--border-color);
+}

@@ -4,7 +4,8 @@
 
     min-height:100%;
 
-    background:#1e293b;
+    background:var(--bg-card);
+    border-right:1px solid var(--border-color);
 
     display:flex;
 
@@ -16,7 +17,7 @@
 
 .sidebar a{
 
-    color:white;
+    color:var(--text-muted);
 
     text-decoration:none;
 
@@ -32,13 +33,15 @@
 
 .sidebar a:hover{
 
-    background:#2563eb;
+    background:var(--bg-hover);
+    color:var(--text-main);
 
 }
 
 .sidebar .active{
 
-    background:#2563eb;
+    background:var(--accent-primary);
+    color:#ffffff;
 
     font-weight:bold;
 

@@ -27,7 +27,7 @@ function CodeEditor({
   return (
     <div className="editor-container">
       <Editor
-        height="500px"
+        height="min(62vh, 620px)"
         language={language === "cpp" ? "cpp" : language}
         value={code}
         theme={theme === "dark" ? "vs-dark" : "light"}
