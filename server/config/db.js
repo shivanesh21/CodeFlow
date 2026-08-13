@@ -20,6 +20,10 @@ const ensureDataDir = () => {
 let mongoServer;
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
   // --- Option 0: Connect to MONGO_URI from environment variable if provided ---
   if (process.env.MONGO_URI) {
     try {

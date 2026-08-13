@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Build & output directories
+dist/
+build/
+.vercel/
+
+# Database & temp files
+.mongo_data/
+**/.mongo_data/
+server/temp/
+server/temp_execution/
+*.log
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
