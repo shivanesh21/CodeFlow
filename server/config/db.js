@@ -20,6 +20,18 @@ const ensureDataDir = () => {
 let mongoServer;
 
 const connectDB = async () => {
+  // --- Option 0: Connect to MONGO_URI from environment variable if provided ---
+  if (process.env.MONGO_URI) {
+    try {
+      console.log(`🔌 Connecting to MongoDB from environment variable...`);
+      await mongoose.connect(process.env.MONGO_URI);
+      console.log(`✅ Connected to MongoDB: ${mongoose.connection.host}`);
+      return;
+    } catch (error) {
+      console.warn(`⚠️ Failed to connect to MONGO_URI: ${error.message}`);
+    }
+  }
+
   // --- Option 1: Connect to real local MongoDB if available ---
   const REAL_URI = "mongodb://127.0.0.1:27017/codeflow";
 
