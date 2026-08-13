@@ -3,6 +3,13 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import dns from "dns";
+
+// Fix Node.js SRV DNS lookup issues (querySrv ECONNREFUSED) for MongoDB Atlas
+try {
+  dns.setDefaultResultOrder("ipv4first");
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (_) {}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
