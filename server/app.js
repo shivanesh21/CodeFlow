@@ -9,6 +9,9 @@ import codeSnippetRoutes from "./routes/CodeSnippetRoutes.js";
 import executionRoutes from "./routes/executionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import visualizerRoutes from "./routes/visualizerRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import assessmentRoutes from "./routes/assessmentRoutes.js";
+import performanceRoutes from "./routes/performanceRoutes.js";
 
 const app = express();
 
@@ -29,6 +32,9 @@ app.use("/api/snippets", codeSnippetRoutes);
 app.use("/api/execute", executionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/visualizer", visualizerRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/assessments", assessmentRoutes);
+app.use("/api/performance", performanceRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({

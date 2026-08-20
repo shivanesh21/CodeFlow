@@ -15,6 +15,10 @@ const History = lazy(() => import("./pages/History/History"));
 const Snippets = lazy(() => import("./pages/Snippets/Snippets"));
 const Profile = lazy(() => import("./pages/Profile/Profile"));
 const VisualizerPage = lazy(() => import("./pages/Visualizer/VisualizerPage"));
+const AssessmentList = lazy(() => import("./pages/Assessment/AssessmentList"));
+const AssessmentTake = lazy(() => import("./pages/Assessment/AssessmentTake"));
+const AssessmentResult = lazy(() => import("./pages/Assessment/AssessmentResult"));
+const LearningDashboard = lazy(() => import("./pages/Learning/LearningDashboard"));
 
 function App() {
   return (
@@ -40,6 +44,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Editor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assessments"
+              element={
+                <ProtectedRoute>
+                  <AssessmentList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assessments/:id/take"
+              element={
+                <ProtectedRoute>
+                  <AssessmentTake />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assessments/result/:attemptId"
+              element={
+                <ProtectedRoute>
+                  <AssessmentResult />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/learning"
+              element={
+                <ProtectedRoute>
+                  <LearningDashboard />
                 </ProtectedRoute>
               }
             />

@@ -244,6 +244,62 @@ function Dashboard() {
               </div>
             </div>
 
+            {/* AI Learning Platform Banner */}
+            <div style={{
+              background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15))",
+              border: "1px solid rgba(99, 102, 241, 0.3)",
+              borderRadius: "1.25rem",
+              padding: "1.5rem 2rem",
+              marginBottom: "2rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "1.25rem",
+              backdropFilter: "blur(12px)"
+            }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+                  <span style={{ fontSize: "1.3rem" }}>🧠</span>
+                  <h3 style={{ fontSize: "1.2rem", fontWeight: "700", color: "#f8fafc", margin: 0 }}>
+                    AI-Powered Adaptive Learning
+                  </h3>
+                  <span style={{ fontSize: "0.75rem", background: "rgba(99, 102, 241, 0.2)", color: "#c4b5fd", padding: "0.2rem 0.5rem", borderRadius: "999px", fontWeight: "600" }}>
+                    Gemini AI
+                  </span>
+                </div>
+                <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: 0 }}>
+                  Take assessments, identify weak concepts & learning gaps, and receive adaptive roadmaps tailored to your coding level.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <Link to="/assessments" style={{
+                  padding: "0.6rem 1.25rem",
+                  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                  color: "#fff",
+                  borderRadius: "0.625rem",
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                  textDecoration: "none"
+                }}>
+                  📋 Start Assessment
+                </Link>
+                <Link to="/learning" style={{
+                  padding: "0.6rem 1.25rem",
+                  background: "rgba(30, 41, 59, 0.8)",
+                  border: "1px solid rgba(148, 163, 184, 0.2)",
+                  color: "#cbd5e1",
+                  borderRadius: "0.625rem",
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                  textDecoration: "none"
+                }}>
+                  📈 Learning Hub & Gaps →
+                </Link>
+              </div>
+            </div>
+
             {/* Charts Section */}
             <div className="charts-grid">
               <div className="chart-card">

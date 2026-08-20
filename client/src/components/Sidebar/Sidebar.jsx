@@ -4,6 +4,9 @@ import "./Sidebar.css";
 const links = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/editor", label: "Editor" },
+  { to: "/assessments", label: "Assessments 📋" },
+  { to: "/learning", label: "Learning Path 🧠" },
+  { to: "/visualizer", label: "Visualizer 🔮" },
   { to: "/snippets", label: "Snippets" },
   { to: "/history", label: "History" },
   { to: "/profile", label: "Profile" },

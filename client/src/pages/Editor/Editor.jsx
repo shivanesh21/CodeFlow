@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import CodeEditor from "../../components/CodeEditor/CodeEditor";
 import LanguageSelector from "../../components/LanguageSelector/LanguageSelector";
 import RunButton from "../../components/RunButton/RunButton";
 import OutputConsole from "../../components/OutputConsole/OutputConsole";
+import AiAssistant from "../../components/AiAssistant/AiAssistant";
 import { executeCode } from "../../services/executionService";
 import { createSnippet } from "../../services/snippetService";
 import { CODE_TEMPLATES } from "../../utils/codeTemplates";
@@ -35,6 +36,41 @@ function Editor() {
 
   // File Upload Ref
   const fileInputRef = useRef(null);
+
+  // AI Panel state
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const editorInstanceRef = useRef(null);
+  const [selectedCode, setSelectedCode] = useState("");
+
+  // Store editor instance for selection extraction
+  const handleEditorReady = useCallback((editor) => {
+    editorInstanceRef.current = editor;
+    // Listen for selection changes
+    editor.onDidChangeCursorSelection(() => {
+      const selection = editor.getSelection();
+      if (selection && !selection.isEmpty()) {
+        const selected = editor.getModel().getValueInRange(selection);
+        setSelectedCode(selected);
+      } else {
+        setSelectedCode("");
+      }
+    });
+  }, []);
+
+  // Apply AI-generated code to editor
+  const handleApplyAiCode = useCallback(
+    (newCode) => {
+      if (
+        window.confirm(
+          "Replace editor code with AI-suggested code? Your current code will be overwritten."
+        )
+      ) {
+        setCode(newCode);
+        addToast("AI code applied to editor", "success");
+      }
+    },
+    [addToast]
+  );
 
   // Auto-Save Effect
   useEffect(() => {
@@ -215,6 +251,13 @@ function Editor() {
               🔭 Visualize
             </button>
             <button
+              className={`btn-editor-action ai-action ${showAiPanel ? "ai-active" : ""}`}
+              onClick={() => setShowAiPanel((prev) => !prev)}
+              title="Toggle AI Assistant"
+            >
+              ✦ AI Assistant
+            </button>
+            <button
               className="btn-editor-action primary-action"
               onClick={handleSaveSnippet}
               title="Save to Snippets Repository (Ctrl+S)"
@@ -288,16 +331,36 @@ function Editor() {
           </div>
         </div>
 
-        {/* Monaco Code Editor */}
-        <CodeEditor
-          language={language}
-          code={code}
-          setCode={setCode}
-          fontSize={fontSize}
-          showLineNumbers={showLineNumbers}
-          onRun={handleRun}
-          onSave={handleSaveSnippet}
-        />
+        {/* Editor + AI Split Layout */}
+        <div className={`editor-ai-split ${showAiPanel ? "ai-open" : ""}`}>
+          {/* Monaco Code Editor */}
+          <div className="editor-main-col">
+            <CodeEditor
+              language={language}
+              code={code}
+              setCode={setCode}
+              fontSize={fontSize}
+              showLineNumbers={showLineNumbers}
+              onRun={handleRun}
+              onSave={handleSaveSnippet}
+              onEditorReady={handleEditorReady}
+            />
+          </div>
+
+          {/* AI Assistant Panel */}
+          {showAiPanel && (
+            <div className="editor-ai-col">
+              <AiAssistant
+                code={code}
+                language={language}
+                selectedCode={selectedCode}
+                executionError={errorText}
+                executionOutput={output}
+                onApplyCode={handleApplyAiCode}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Output Console & STDIN */}
         <div className="console-split-wrapper">

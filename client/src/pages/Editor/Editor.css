@@ -224,3 +224,78 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   AI Assistant Integration — Split Layout
+   ============================================================ */
+
+/* AI Toggle Button in Toolbar */
+.ai-action {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.12);
+  transition: all 0.25s ease;
+}
+
+.ai-action:hover {
+  background: linear-gradient(135deg, #2a2563, #3730a3);
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 18px rgba(99, 102, 241, 0.35);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.ai-action.ai-active {
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+  color: #fff;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.45);
+}
+
+/* Editor + AI Split Container */
+.editor-ai-split {
+  display: flex;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.editor-main-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-ai-col {
+  width: 380px;
+  min-width: 300px;
+  max-width: 440px;
+  flex-shrink: 0;
+  height: min(62vh, 620px);
+  animation: aiSlideIn 0.3s ease;
+}
+
+@keyframes aiSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive: stack on narrow screens */
+@media (max-width: 1024px) {
+  .editor-ai-split {
+    flex-direction: column;
+  }
+
+  .editor-ai-col {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 450px;
+  }
+}
+

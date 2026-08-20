@@ -11,6 +11,7 @@ function CodeEditor({
   showLineNumbers = true,
   onRun,
   onSave,
+  onEditorReady,
 }) {
   const { theme } = useTheme();
 
@@ -22,6 +23,9 @@ function CodeEditor({
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       if (onSave) onSave();
     });
+
+    // Expose editor instance to parent (for AI selection support)
+    if (onEditorReady) onEditorReady(editor);
   };
 
   return (
@@ -48,3 +52,4 @@ function CodeEditor({
 }
 
 export default CodeEditor;
+

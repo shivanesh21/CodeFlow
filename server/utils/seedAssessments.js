@@ -1,0 +1,798 @@
+/**
+ * Seed Script — populates MongoDB with 3 assessments and 45 questions.
+ * Run with: node server/utils/seedAssessments.js
+ * Safe to re-run (idempotent via title-based upsert).
+ */
+
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, "../.env") });
+
+import connectDB from "../config/db.js";
+import Question from "../models/Question.js";
+import Assessment from "../models/Assessment.js";
+
+// ============================================================
+// Question bank
+// ============================================================
+
+const pythonBasicsQuestions = [
+  {
+    question: "What is the output of: print(type(3.14))?",
+    questionType: "OutputPrediction",
+    options: ["<class 'int'>", "<class 'float'>", "<class 'str'>", "<class 'double'>"],
+    correctAnswer: "<class 'float'>",
+    explanation: "3.14 is a floating-point literal. Python's type() returns the class of an object, so type(3.14) returns <class 'float'>.",
+    difficulty: "easy",
+    concepts: ["DataTypes"],
+    topic: "Python Data Types",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "Which of the following is the correct way to declare a variable in Python?",
+    questionType: "MCQ",
+    options: ["var x = 10", "int x = 10", "x = 10", "let x = 10"],
+    correctAnswer: "x = 10",
+    explanation: "Python uses dynamic typing. You simply assign a value to a name without declaring its type. var, int, and let are from other languages.",
+    difficulty: "easy",
+    concepts: ["Variables"],
+    topic: "Python Variables",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What does the // operator do in Python?",
+    questionType: "MCQ",
+    options: ["Division", "Floor division", "Modulus", "Exponentiation"],
+    correctAnswer: "Floor division",
+    explanation: "// is the floor division operator in Python. It divides and rounds down to the nearest integer. Example: 7 // 2 = 3.",
+    difficulty: "easy",
+    concepts: ["Operators"],
+    topic: "Python Operators",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What is the output of:\nx = [1, 2, 3]\nprint(x[-1])",
+    questionType: "OutputPrediction",
+    codeSnippet: "x = [1, 2, 3]\nprint(x[-1])",
+    options: ["1", "3", "-1", "Error"],
+    correctAnswer: "3",
+    explanation: "Negative indexing in Python starts from the end of the list. x[-1] accesses the last element, which is 3.",
+    difficulty: "easy",
+    concepts: ["Array"],
+    topic: "Python Lists",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "Which keyword is used to define a function in Python?",
+    questionType: "MCQ",
+    options: ["function", "def", "fun", "func"],
+    correctAnswer: "def",
+    explanation: "In Python, the def keyword is used to define a function. Example: def my_function(): pass",
+    difficulty: "easy",
+    concepts: ["Functions"],
+    topic: "Python Functions",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What will be the output?\nfor i in range(3):\n    print(i)",
+    questionType: "OutputPrediction",
+    codeSnippet: "for i in range(3):\n    print(i)",
+    options: ["0 1 2 3", "1 2 3", "0 1 2", "0 1 2 3 4"],
+    correctAnswer: "0 1 2",
+    explanation: "range(3) generates numbers 0, 1, 2. The for loop prints each one on a new line.",
+    difficulty: "easy",
+    concepts: ["Loops"],
+    topic: "Python Loops",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What is the correct Python syntax for an if-else statement?",
+    questionType: "MCQ",
+    options: [
+      "if (x > 0) { } else { }",
+      "if x > 0: ... else: ...",
+      "if x > 0 then ... else ...",
+      "if x > 0 do ... end",
+    ],
+    correctAnswer: "if x > 0: ... else: ...",
+    explanation: "Python uses indentation instead of braces. The correct syntax is 'if condition:' followed by an indented block, then 'else:' for the alternative.",
+    difficulty: "easy",
+    concepts: ["Conditions"],
+    topic: "Python Conditionals",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "Identify the bug in this code:\ndef add(a, b)\n    return a + b",
+    questionType: "Debugging",
+    codeSnippet: "def add(a, b)\n    return a + b",
+    options: ["Missing colon after function signature", "Wrong indentation", "return is not valid", "Missing parentheses"],
+    correctAnswer: "Missing colon after function signature",
+    explanation: "In Python, function definitions must end with a colon (:). The correct syntax is: def add(a, b):",
+    difficulty: "easy",
+    concepts: ["Functions"],
+    topic: "Python Syntax",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What is the difference between a list and a tuple in Python?",
+    questionType: "Concept",
+    options: [
+      "Lists are immutable, tuples are mutable",
+      "Lists are mutable, tuples are immutable",
+      "Both are mutable",
+      "Both are immutable",
+    ],
+    correctAnswer: "Lists are mutable, tuples are immutable",
+    explanation: "Lists (defined with []) can be modified after creation. Tuples (defined with ()) cannot be changed once created — they are immutable.",
+    difficulty: "medium",
+    concepts: ["DataTypes", "Array"],
+    topic: "Python Data Structures",
+    programmingLanguage: "python",
+    marks: 2,
+  },
+  {
+    question: "What does *args do in a Python function definition?",
+    questionType: "Concept",
+    options: [
+      "Accepts keyword arguments",
+      "Accepts any number of positional arguments",
+      "Multiplies arguments",
+      "Creates a pointer",
+    ],
+    correctAnswer: "Accepts any number of positional arguments",
+    explanation: "*args allows a function to accept a variable number of positional arguments. They are packed into a tuple inside the function.",
+    difficulty: "medium",
+    concepts: ["Functions"],
+    topic: "Python Functions",
+    programmingLanguage: "python",
+    marks: 2,
+  },
+  {
+    question: "What will this code output?\ndef factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\nprint(factorial(4))",
+    questionType: "OutputPrediction",
+    codeSnippet: "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\nprint(factorial(4))",
+    options: ["24", "12", "4", "1"],
+    correctAnswer: "24",
+    explanation: "factorial(4) = 4 * factorial(3) = 4 * 3 * factorial(2) = 4 * 3 * 2 * factorial(1) = 4 * 3 * 2 * 1 * factorial(0) = 4*3*2*1*1 = 24",
+    difficulty: "medium",
+    concepts: ["Recursion", "Functions"],
+    topic: "Recursion",
+    programmingLanguage: "python",
+    marks: 2,
+  },
+  {
+    question: "Which of the following Python data types is a key-value store?",
+    questionType: "MCQ",
+    options: ["list", "tuple", "dict", "set"],
+    correctAnswer: "dict",
+    explanation: "A Python dict (dictionary) stores data as key-value pairs and is implemented as a hash map internally.",
+    difficulty: "easy",
+    concepts: ["HashTable", "DataTypes"],
+    topic: "Python Data Types",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+  {
+    question: "What is the time complexity of searching for an element in a Python dictionary (average case)?",
+    questionType: "Concept",
+    options: ["O(n)", "O(log n)", "O(1)", "O(n²)"],
+    correctAnswer: "O(1)",
+    explanation: "Python dictionaries are backed by a hash table. Average-case lookup is O(1) because the key is hashed to find the bucket directly.",
+    difficulty: "medium",
+    concepts: ["HashTable", "Searching"],
+    topic: "Hash Tables",
+    programmingLanguage: "python",
+    marks: 2,
+  },
+  {
+    question: "What is a list comprehension in Python?",
+    questionType: "Concept",
+    options: [
+      "A way to understand lists",
+      "A concise way to create lists using a single expression",
+      "A method to sort a list",
+      "A built-in function",
+    ],
+    correctAnswer: "A concise way to create lists using a single expression",
+    explanation: "List comprehensions provide a compact syntax: [expr for item in iterable if condition]. Example: squares = [x**2 for x in range(10)]",
+    difficulty: "medium",
+    concepts: ["Array", "Loops"],
+    topic: "Python Lists",
+    programmingLanguage: "python",
+    marks: 2,
+  },
+  {
+    question: "Fix the bug: the function should return the sum of all list elements.\ndef sum_list(lst):\n    total = 0\n    for i in range(len(lst)):\n        total += lst[i]\n    return lst",
+    questionType: "Debugging",
+    codeSnippet: "def sum_list(lst):\n    total = 0\n    for i in range(len(lst)):\n        total += lst[i]\n    return lst",
+    options: [
+      "Change return lst to return total",
+      "Change total = 0 to total = 1",
+      "Change += to -=",
+      "Change range(len(lst)) to range(lst)",
+    ],
+    correctAnswer: "Change return lst to return total",
+    explanation: "The function accumulates the sum in 'total' but incorrectly returns 'lst' (the original list). Changing 'return lst' to 'return total' fixes it.",
+    difficulty: "easy",
+    concepts: ["Functions", "Loops", "Array"],
+    topic: "Debugging",
+    programmingLanguage: "python",
+    marks: 1,
+  },
+];
+
+const dataStructuresQuestions = [
+  {
+    question: "Which data structure follows the LIFO (Last In, First Out) principle?",
+    questionType: "MCQ",
+    options: ["Queue", "Stack", "Array", "Linked List"],
+    correctAnswer: "Stack",
+    explanation: "A Stack follows LIFO — the last element pushed is the first to be popped. Think of a stack of plates.",
+    difficulty: "easy",
+    concepts: ["Stack"],
+    topic: "Data Structures Basics",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "Which data structure follows FIFO (First In, First Out)?",
+    questionType: "MCQ",
+    options: ["Stack", "Queue", "Tree", "Graph"],
+    correctAnswer: "Queue",
+    explanation: "A Queue follows FIFO — elements are added at the rear and removed from the front, like a real-world queue/line.",
+    difficulty: "easy",
+    concepts: ["Queue"],
+    topic: "Data Structures Basics",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the time complexity of accessing an element by index in an array?",
+    questionType: "Concept",
+    options: ["O(n)", "O(log n)", "O(1)", "O(n²)"],
+    correctAnswer: "O(1)",
+    explanation: "Arrays store elements in contiguous memory. Given the base address and index, any element is accessible in constant time O(1).",
+    difficulty: "easy",
+    concepts: ["Array"],
+    topic: "Array Complexity",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "In a singly linked list, what does each node contain?",
+    questionType: "MCQ",
+    options: [
+      "Data only",
+      "Data and a pointer to the next node",
+      "Data and pointers to both next and previous nodes",
+      "Only a pointer to the next node",
+    ],
+    correctAnswer: "Data and a pointer to the next node",
+    explanation: "Each node in a singly linked list stores data and a 'next' pointer to the following node. Doubly linked lists have both next and previous pointers.",
+    difficulty: "easy",
+    concepts: ["LinkedList"],
+    topic: "Linked Lists",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the worst-case time complexity of searching for an element in an unsorted linked list?",
+    questionType: "Concept",
+    options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+    correctAnswer: "O(n)",
+    explanation: "In the worst case, we must traverse every node to find the element (or confirm it doesn't exist), making it O(n).",
+    difficulty: "medium",
+    concepts: ["LinkedList", "Searching"],
+    topic: "Linked List Operations",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is a Binary Search Tree (BST)?",
+    questionType: "Concept",
+    options: [
+      "A tree where each node has at most 2 children with no ordering",
+      "A tree where left child < parent < right child",
+      "A tree where all nodes are at the same level",
+      "A tree where right child < parent < left child",
+    ],
+    correctAnswer: "A tree where left child < parent < right child",
+    explanation: "In a BST, for every node: all values in the left subtree are less than the node, and all values in the right subtree are greater.",
+    difficulty: "easy",
+    concepts: ["BST", "Tree"],
+    topic: "Binary Search Tree",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the average time complexity for search, insert, and delete in a balanced BST?",
+    questionType: "Concept",
+    options: ["O(1)", "O(n)", "O(log n)", "O(n log n)"],
+    correctAnswer: "O(log n)",
+    explanation: "In a balanced BST, each comparison eliminates half the remaining nodes, giving O(log n) for search, insert, and delete.",
+    difficulty: "medium",
+    concepts: ["BST", "Searching"],
+    topic: "BST Complexity",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "Which data structure is most suitable for implementing a browser's back button?",
+    questionType: "MCQ",
+    options: ["Queue", "Stack", "Array", "Graph"],
+    correctAnswer: "Stack",
+    explanation: "A Stack (LIFO) is ideal — each visited page is pushed, and pressing 'back' pops the most recent page.",
+    difficulty: "medium",
+    concepts: ["Stack"],
+    topic: "Stack Applications",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "In a graph, what is the difference between BFS and DFS?",
+    questionType: "Concept",
+    options: [
+      "BFS uses a stack, DFS uses a queue",
+      "BFS uses a queue and explores level by level; DFS uses a stack and explores depth first",
+      "They are the same algorithm",
+      "BFS can only work on trees, DFS on graphs",
+    ],
+    correctAnswer: "BFS uses a queue and explores level by level; DFS uses a stack and explores depth first",
+    explanation: "BFS (Breadth-First Search) explores all neighbors at the current level before moving deeper using a queue. DFS (Depth-First Search) goes as deep as possible before backtracking using a stack (or recursion).",
+    difficulty: "medium",
+    concepts: ["Graph", "Searching"],
+    topic: "Graph Traversal",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is a Hash Table and what problem does it solve?",
+    questionType: "Concept",
+    options: [
+      "A sorted array that speeds up searching",
+      "A data structure that maps keys to values for O(1) average lookup",
+      "A linked list with sorted elements",
+      "A tree that guarantees O(log n) operations",
+    ],
+    correctAnswer: "A data structure that maps keys to values for O(1) average lookup",
+    explanation: "Hash tables use a hash function to map keys to array indices. This enables O(1) average time for insert, delete, and lookup operations.",
+    difficulty: "medium",
+    concepts: ["HashTable"],
+    topic: "Hash Tables",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is the in-order traversal of a BST?",
+    questionType: "Concept",
+    options: [
+      "Root → Left → Right",
+      "Left → Root → Right",
+      "Left → Right → Root",
+      "Right → Root → Left",
+    ],
+    correctAnswer: "Left → Root → Right",
+    explanation: "In-order traversal visits: Left subtree, then Root, then Right subtree. For a BST, this produces nodes in sorted ascending order.",
+    difficulty: "medium",
+    concepts: ["BST", "Tree"],
+    topic: "Tree Traversal",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is a circular queue and how does it differ from a regular queue?",
+    questionType: "Concept",
+    options: [
+      "They are identical",
+      "A circular queue reuses freed space by wrapping around, preventing memory waste",
+      "A circular queue uses a stack internally",
+      "A circular queue can only hold 10 elements",
+    ],
+    correctAnswer: "A circular queue reuses freed space by wrapping around, preventing memory waste",
+    explanation: "In a regular queue, dequeued positions are wasted. A circular queue wraps the rear pointer to the front when it reaches the end, efficiently reusing space.",
+    difficulty: "hard",
+    concepts: ["Queue"],
+    topic: "Advanced Queue",
+    programmingLanguage: "general",
+    marks: 3,
+  },
+  {
+    question: "What is a graph and what are its two main components?",
+    questionType: "Concept",
+    options: [
+      "A visual chart with bars and lines",
+      "A data structure with vertices (nodes) and edges (connections)",
+      "A sorted array of nodes",
+      "A tree with exactly two children per node",
+    ],
+    correctAnswer: "A data structure with vertices (nodes) and edges (connections)",
+    explanation: "A graph consists of vertices (also called nodes) and edges (connections between nodes). Graphs can be directed or undirected, weighted or unweighted.",
+    difficulty: "easy",
+    concepts: ["Graph"],
+    topic: "Graph Basics",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the space complexity of storing an adjacency matrix for a graph with n vertices?",
+    questionType: "Concept",
+    options: ["O(n)", "O(n + e)", "O(n²)", "O(log n)"],
+    correctAnswer: "O(n²)",
+    explanation: "An adjacency matrix is an n×n grid where matrix[i][j] = 1 if there is an edge from vertex i to j. This requires O(n²) space regardless of the number of edges.",
+    difficulty: "hard",
+    concepts: ["Graph"],
+    topic: "Graph Representation",
+    programmingLanguage: "general",
+    marks: 3,
+  },
+  {
+    question: "When would you prefer a Linked List over an Array?",
+    questionType: "Concept",
+    options: [
+      "When you need fast random access",
+      "When you need frequent insertions/deletions at the beginning or middle",
+      "When memory is not a concern",
+      "When you need O(1) search time",
+    ],
+    correctAnswer: "When you need frequent insertions/deletions at the beginning or middle",
+    explanation: "Linked lists allow O(1) insertion/deletion once you have a reference to the node. Arrays require O(n) shifting for mid-list changes. Arrays are better for random access (O(1) vs O(n) for linked lists).",
+    difficulty: "medium",
+    concepts: ["LinkedList", "Array"],
+    topic: "Choosing Data Structures",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+];
+
+const algorithmsQuestions = [
+  {
+    question: "What is the time complexity of Binary Search on a sorted array?",
+    questionType: "Concept",
+    options: ["O(n)", "O(n²)", "O(log n)", "O(1)"],
+    correctAnswer: "O(log n)",
+    explanation: "Binary Search halves the search space at each step. Starting with n elements, after k steps we have n/2^k elements. It takes log₂(n) steps — O(log n).",
+    difficulty: "easy",
+    concepts: ["Searching"],
+    topic: "Binary Search",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the worst-case time complexity of Bubble Sort?",
+    questionType: "Concept",
+    options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    correctAnswer: "O(n²)",
+    explanation: "Bubble Sort has nested loops: for each of n elements, it potentially compares with n other elements. This gives O(n²) in the worst case (reverse-sorted input).",
+    difficulty: "easy",
+    concepts: ["Sorting"],
+    topic: "Sorting Algorithms",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the time complexity of Merge Sort?",
+    questionType: "Concept",
+    options: ["O(n)", "O(n²)", "O(n log n)", "O(log n)"],
+    correctAnswer: "O(n log n)",
+    explanation: "Merge Sort divides the array into halves (log n levels) and merges them in O(n) time per level, giving O(n log n) total. This is optimal for comparison-based sorting.",
+    difficulty: "medium",
+    concepts: ["Sorting"],
+    topic: "Merge Sort",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is the base case in recursion?",
+    questionType: "Concept",
+    options: [
+      "The first recursive call",
+      "The condition that stops the recursion",
+      "The function that calls itself",
+      "The maximum depth of recursion",
+    ],
+    correctAnswer: "The condition that stops the recursion",
+    explanation: "Every recursive function must have a base case — a condition where it stops calling itself and returns a direct result. Without it, the function recurses infinitely causing a stack overflow.",
+    difficulty: "easy",
+    concepts: ["Recursion"],
+    topic: "Recursion Basics",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What distinguishes Dynamic Programming from simple recursion?",
+    questionType: "Concept",
+    options: [
+      "Dynamic Programming is faster by definition",
+      "Dynamic Programming stores results of subproblems to avoid recomputation",
+      "Dynamic Programming only works on arrays",
+      "Dynamic Programming uses iteration instead of recursion",
+    ],
+    correctAnswer: "Dynamic Programming stores results of subproblems to avoid recomputation",
+    explanation: "DP (memoization or tabulation) saves solutions to overlapping subproblems. This converts exponential recursive algorithms (like naive Fibonacci) into polynomial time.",
+    difficulty: "medium",
+    concepts: ["DynamicProgramming", "Recursion"],
+    topic: "Dynamic Programming",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is a Greedy Algorithm?",
+    questionType: "Concept",
+    options: [
+      "An algorithm that finds the globally optimal solution by trying all possibilities",
+      "An algorithm that makes the locally optimal choice at each step hoping to reach a global optimum",
+      "An algorithm that uses recursion exclusively",
+      "An algorithm that sorts first, then searches",
+    ],
+    correctAnswer: "An algorithm that makes the locally optimal choice at each step hoping to reach a global optimum",
+    explanation: "Greedy algorithms make the best immediate choice at each step without reconsidering past choices. They work for problems with the greedy-choice property (e.g., Activity Selection, Huffman Coding, Dijkstra's).",
+    difficulty: "medium",
+    concepts: ["Greedy"],
+    topic: "Greedy Algorithms",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is the prerequisite for Binary Search to work correctly?",
+    questionType: "Concept",
+    options: [
+      "The array must be sorted",
+      "The array must have no duplicates",
+      "The array must have even number of elements",
+      "The array must be stored in a linked list",
+    ],
+    correctAnswer: "The array must be sorted",
+    explanation: "Binary Search relies on the sorted order to determine which half to discard. On an unsorted array, it gives incorrect results.",
+    difficulty: "easy",
+    concepts: ["Searching"],
+    topic: "Binary Search",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is memoization in the context of Dynamic Programming?",
+    questionType: "Concept",
+    options: [
+      "Memorizing the algorithm steps",
+      "Caching the results of expensive function calls to avoid recomputation",
+      "Using arrays to store data",
+      "A technique to reduce space complexity",
+    ],
+    correctAnswer: "Caching the results of expensive function calls to avoid recomputation",
+    explanation: "Memoization (top-down DP) stores computed results in a cache (usually a hash map or array). When the same input occurs again, the cached result is returned directly in O(1).",
+    difficulty: "medium",
+    concepts: ["DynamicProgramming"],
+    topic: "Memoization",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "Which sorting algorithm uses a pivot element to partition the array?",
+    questionType: "MCQ",
+    options: ["Merge Sort", "Bubble Sort", "Quick Sort", "Insertion Sort"],
+    correctAnswer: "Quick Sort",
+    explanation: "Quick Sort selects a pivot, partitions elements less than pivot to the left and greater to the right, then recursively sorts each partition. Average case: O(n log n).",
+    difficulty: "easy",
+    concepts: ["Sorting"],
+    topic: "Quick Sort",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "What is the Fibonacci sequence and what makes its naive recursive implementation inefficient?",
+    questionType: "Concept",
+    options: [
+      "It is efficient because recursion is always fast",
+      "Naive recursion has exponential time complexity due to recomputing overlapping subproblems",
+      "It is only inefficient for large prime numbers",
+      "Recursion depth causes the issue, not repeated computation",
+    ],
+    correctAnswer: "Naive recursion has exponential time complexity due to recomputing overlapping subproblems",
+    explanation: "fib(n) calls fib(n-1) and fib(n-2), each of which calls two more, creating an exponential tree O(2^n). fib(3) is recomputed many times. DP/memoization reduces this to O(n).",
+    difficulty: "medium",
+    concepts: ["Recursion", "DynamicProgramming"],
+    topic: "Fibonacci & DP",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What does the term 'divide and conquer' mean in algorithm design?",
+    questionType: "Concept",
+    options: [
+      "Split the problem into two halves, solve only one half",
+      "Divide the problem into smaller subproblems, solve each, then combine results",
+      "Conquer one element at a time without dividing",
+      "Use multiple processors to solve the problem",
+    ],
+    correctAnswer: "Divide the problem into smaller subproblems, solve each, then combine results",
+    explanation: "Divide and conquer breaks a problem into smaller subproblems (divide), solves them recursively (conquer), and combines results. Examples: Merge Sort, Quick Sort, Binary Search.",
+    difficulty: "medium",
+    concepts: ["Sorting", "Searching", "Recursion"],
+    topic: "Algorithm Design Paradigms",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "Which is the best-case time complexity of Insertion Sort?",
+    questionType: "Concept",
+    options: ["O(n²)", "O(n log n)", "O(n)", "O(1)"],
+    correctAnswer: "O(n)",
+    explanation: "When the input is already sorted, Insertion Sort only compares each element once with its predecessor (no shifts needed), giving O(n) — the best case.",
+    difficulty: "medium",
+    concepts: ["Sorting"],
+    topic: "Insertion Sort",
+    programmingLanguage: "general",
+    marks: 2,
+  },
+  {
+    question: "What is the key property that makes a problem suitable for Dynamic Programming?",
+    questionType: "Concept",
+    options: [
+      "The problem must involve sorting",
+      "Optimal substructure and overlapping subproblems",
+      "The input must be a graph",
+      "The problem must have a unique solution",
+    ],
+    correctAnswer: "Optimal substructure and overlapping subproblems",
+    explanation: "A problem suits DP when: (1) Optimal substructure — optimal solution uses optimal solutions to subproblems; (2) Overlapping subproblems — same subproblems are solved multiple times. Classic examples: Knapsack, LCS, Shortest Path.",
+    difficulty: "hard",
+    concepts: ["DynamicProgramming"],
+    topic: "DP Properties",
+    programmingLanguage: "general",
+    marks: 3,
+  },
+  {
+    question: "What is the difference between Linear Search and Binary Search?",
+    questionType: "Concept",
+    options: [
+      "They are identical",
+      "Linear Search is O(n) and works on any array; Binary Search is O(log n) but requires sorted input",
+      "Binary Search is O(n) and Linear Search is O(log n)",
+      "Linear Search requires sorted input",
+    ],
+    correctAnswer: "Linear Search is O(n) and works on any array; Binary Search is O(log n) but requires sorted input",
+    explanation: "Linear Search checks each element sequentially — O(n), no sorting required. Binary Search exploits sorted order to halve search space — O(log n), requires sorted array.",
+    difficulty: "easy",
+    concepts: ["Searching"],
+    topic: "Search Algorithms",
+    programmingLanguage: "general",
+    marks: 1,
+  },
+  {
+    question: "Why is Quick Sort generally preferred over Merge Sort for in-place sorting?",
+    questionType: "Concept",
+    options: [
+      "Quick Sort has better worst-case complexity",
+      "Quick Sort has O(log n) space complexity while Merge Sort requires O(n) extra space",
+      "Merge Sort is always slower",
+      "Quick Sort is easier to implement",
+    ],
+    correctAnswer: "Quick Sort has O(log n) space complexity while Merge Sort requires O(n) extra space",
+    explanation: "Quick Sort sorts in-place using O(log n) stack space (for recursion). Merge Sort needs O(n) auxiliary space for the merge step. In memory-constrained environments, Quick Sort wins on space.",
+    difficulty: "hard",
+    concepts: ["Sorting"],
+    topic: "Sorting Trade-offs",
+    programmingLanguage: "general",
+    marks: 3,
+  },
+];
+
+// ============================================================
+// Assessment definitions
+// ============================================================
+
+const assessmentDefinitions = [
+  {
+    title: "Python Fundamentals Assessment",
+    description:
+      "Test your knowledge of Python basics including variables, data types, operators, loops, conditionals, and functions.",
+    programmingLanguage: "python",
+    difficulty: "mixed",
+    topics: ["Variables", "Data Types", "Operators", "Loops", "Conditionals", "Functions"],
+    icon: "🐍",
+    tags: ["python", "beginners", "fundamentals"],
+    timeLimit: 25,
+    questionKeys: pythonBasicsQuestions,
+  },
+  {
+    title: "Data Structures Deep Dive",
+    description:
+      "Challenge yourself on core data structures — Arrays, Linked Lists, Stacks, Queues, Trees, BSTs, Graphs, and Hash Tables.",
+    programmingLanguage: "general",
+    difficulty: "mixed",
+    topics: ["Arrays", "Linked Lists", "Stack", "Queue", "Tree", "BST", "Graph", "Hash Table"],
+    icon: "🏗️",
+    tags: ["data-structures", "intermediate", "cs-fundamentals"],
+    timeLimit: 30,
+    questionKeys: dataStructuresQuestions,
+  },
+  {
+    title: "Algorithms & Problem Solving",
+    description:
+      "Master searching, sorting, recursion, dynamic programming, and greedy algorithms through concept and analysis questions.",
+    programmingLanguage: "general",
+    difficulty: "mixed",
+    topics: ["Searching", "Sorting", "Recursion", "Dynamic Programming", "Greedy"],
+    icon: "⚡",
+    tags: ["algorithms", "intermediate", "problem-solving"],
+    timeLimit: 35,
+    questionKeys: algorithmsQuestions,
+  },
+];
+
+// ============================================================
+// Main seeding function
+// ============================================================
+async function seed() {
+  try {
+    await connectDB();
+    console.log("✅ Connected to MongoDB");
+
+    for (const def of assessmentDefinitions) {
+      console.log(`\n📝 Seeding: "${def.title}"`);
+
+      const insertedQuestions = [];
+
+      for (const qData of def.questionKeys) {
+        // Upsert by question text to avoid duplicates
+        const q = await Question.findOneAndUpdate(
+          { question: qData.question },
+          { $set: qData },
+          { upsert: true, new: true }
+        );
+        insertedQuestions.push(q._id);
+      }
+
+      const totalMarks = def.questionKeys.reduce((sum, q) => sum + q.marks, 0);
+
+      // Derive unique concepts from all questions
+      const allConcepts = [
+        ...new Set(def.questionKeys.flatMap((q) => q.concepts)),
+      ];
+
+      await Assessment.findOneAndUpdate(
+        { title: def.title },
+        {
+          $set: {
+            title: def.title,
+            description: def.description,
+            programmingLanguage: def.programmingLanguage,
+            difficulty: def.difficulty,
+            topics: def.topics,
+            concepts: allConcepts,
+            questions: insertedQuestions,
+            totalMarks,
+            timeLimit: def.timeLimit,
+            isActive: true,
+            icon: def.icon,
+            tags: def.tags,
+          },
+        },
+        { upsert: true, new: true }
+      );
+
+      console.log(
+        `   ✅ ${insertedQuestions.length} questions | ${totalMarks} total marks | ${allConcepts.length} concepts`
+      );
+    }
+
+    console.log("\n🎉 Seeding complete!");
+    process.exit(0);
+  } catch (err) {
+    console.error("❌ Seed error:", err);
+    process.exit(1);
+  }
+}
+
+seed();
