@@ -10,7 +10,7 @@ import {
   dashboardStats,
 } 
 
-from "../controllers/codeSnippetController.js";
+from "../controllers/CodeSnippetController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 
