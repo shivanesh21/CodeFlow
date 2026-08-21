@@ -734,65 +734,78 @@ const assessmentDefinitions = [
 // ============================================================
 // Main seeding function
 // ============================================================
-async function seed() {
-  try {
-    await connectDB();
-    console.log("✅ Connected to MongoDB");
+export async function seedAssessments() {
+  for (const def of assessmentDefinitions) {
+    console.log(`\n📝 Seeding: "${def.title}"`);
 
-    for (const def of assessmentDefinitions) {
-      console.log(`\n📝 Seeding: "${def.title}"`);
+    const insertedQuestions = [];
 
-      const insertedQuestions = [];
-
-      for (const qData of def.questionKeys) {
-        // Upsert by question text to avoid duplicates
-        const q = await Question.findOneAndUpdate(
-          { question: qData.question },
-          { $set: qData },
-          { upsert: true, new: true }
-        );
-        insertedQuestions.push(q._id);
-      }
-
-      const totalMarks = def.questionKeys.reduce((sum, q) => sum + q.marks, 0);
-
-      // Derive unique concepts from all questions
-      const allConcepts = [
-        ...new Set(def.questionKeys.flatMap((q) => q.concepts)),
-      ];
-
-      await Assessment.findOneAndUpdate(
-        { title: def.title },
-        {
-          $set: {
-            title: def.title,
-            description: def.description,
-            programmingLanguage: def.programmingLanguage,
-            difficulty: def.difficulty,
-            topics: def.topics,
-            concepts: allConcepts,
-            questions: insertedQuestions,
-            totalMarks,
-            timeLimit: def.timeLimit,
-            isActive: true,
-            icon: def.icon,
-            tags: def.tags,
-          },
-        },
-        { upsert: true, new: true }
+    for (const qData of def.questionKeys) {
+      // Upsert by question text to avoid duplicates
+      const q = await Question.findOneAndUpdate(
+        { question: qData.question },
+        { $set: qData },
+        { upsert: true, returnDocument: "after" }
       );
-
-      console.log(
-        `   ✅ ${insertedQuestions.length} questions | ${totalMarks} total marks | ${allConcepts.length} concepts`
-      );
+      insertedQuestions.push(q._id);
     }
 
-    console.log("\n🎉 Seeding complete!");
-    process.exit(0);
+    const totalMarks = def.questionKeys.reduce((sum, q) => sum + q.marks, 0);
+
+    // Derive unique concepts from all questions
+    const allConcepts = [
+      ...new Set(def.questionKeys.flatMap((q) => q.concepts)),
+    ];
+
+    await Assessment.findOneAndUpdate(
+      { title: def.title },
+      {
+        $set: {
+          title: def.title,
+          description: def.description,
+          programmingLanguage: def.programmingLanguage,
+          difficulty: def.difficulty,
+          topics: def.topics,
+          concepts: allConcepts,
+          questions: insertedQuestions,
+          totalMarks,
+          timeLimit: def.timeLimit,
+          isActive: true,
+          icon: def.icon,
+          tags: def.tags,
+        },
+      },
+      { upsert: true, returnDocument: "after" }
+    );
+
+    console.log(
+      `   ✅ ${insertedQuestions.length} questions | ${totalMarks} total marks | ${allConcepts.length} concepts`
+    );
+  }
+
+  console.log("\n🎉 Seeding complete!");
+}
+
+export async function autoSeedAssessments() {
+  try {
+    const count = await Assessment.countDocuments();
+    if (count === 0) {
+      console.log("🌱 No assessments found in DB. Auto-seeding default assessments...");
+      await seedAssessments();
+    }
   } catch (err) {
-    console.error("❌ Seed error:", err);
-    process.exit(1);
+    console.error("Auto-seeding error:", err);
   }
 }
 
-seed();
+// Standalone CLI execution
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  connectDB()
+    .then(() => seedAssessments())
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error("❌ Seed error:", err);
+      process.exit(1);
+    });
+}
+

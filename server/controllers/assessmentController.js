@@ -95,7 +95,6 @@ export const listAssessments = async (req, res) => {
     if (concept) filter.concepts = concept;
 
     const assessments = await Assessment.find(filter)
-      .select("-questions")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -116,6 +115,7 @@ export const listAssessments = async (req, res) => {
 
     const enriched = assessments.map((a) => ({
       ...a,
+      questionCount: Array.isArray(a.questions) ? a.questions.length : 0,
       userAttempts: attemptMap[a._id.toString()] || 0,
     }));
 
@@ -145,19 +145,21 @@ export const getAssessment = async (req, res) => {
     }
 
     // Strip correct answers from questions before sending to client
-    const sanitizedQuestions = assessment.questions.map((q) => ({
-      _id: q._id,
-      question: q.question,
-      questionType: q.questionType,
-      options: q.options,
-      codeSnippet: q.codeSnippet,
-      difficulty: q.difficulty,
-      concepts: q.concepts,
-      topic: q.topic,
-      programmingLanguage: q.programmingLanguage,
-      marks: q.marks,
-      // correctAnswer and explanation are intentionally omitted
-    }));
+    const sanitizedQuestions = (assessment.questions || [])
+      .filter((q) => q != null)
+      .map((q) => ({
+        _id: q._id,
+        question: q.question,
+        questionType: q.questionType,
+        options: q.options,
+        codeSnippet: q.codeSnippet,
+        difficulty: q.difficulty,
+        concepts: q.concepts,
+        topic: q.topic,
+        programmingLanguage: q.programmingLanguage,
+        marks: q.marks,
+        // correctAnswer and explanation are intentionally omitted
+      }));
 
     return res.status(200).json({
       success: true,
@@ -266,10 +268,14 @@ export const submitAssessment = async (req, res) => {
         .json({ success: false, message: "Assessment not found." });
     }
 
+    const validQuestions = (assessment.questions || []).filter((q) => q != null);
+
     // Build a map of questionId -> Question for fast lookup
     const questionMap = {};
-    assessment.questions.forEach((q) => {
-      questionMap[q._id.toString()] = q;
+    validQuestions.forEach((q) => {
+      if (q._id) {
+        questionMap[q._id.toString()] = q;
+      }
     });
 
     // Score each answer
@@ -292,13 +298,13 @@ export const submitAssessment = async (req, res) => {
 
       const isCorrect =
         (ans.selectedAnswer || "").trim().toLowerCase() ===
-        question.correctAnswer.trim().toLowerCase();
+        (question.correctAnswer || "").trim().toLowerCase();
 
-      const marksAwarded = isCorrect ? question.marks : 0;
+      const marksAwarded = isCorrect ? (question.marks || 1) : 0;
       totalScore += marksAwarded;
 
       // Track concept breakdown
-      question.concepts.forEach((concept) => {
+      (question.concepts || []).forEach((concept) => {
         if (!conceptBreakdown[concept]) {
           conceptBreakdown[concept] = { correct: 0, total: 0 };
         }
@@ -311,18 +317,18 @@ export const submitAssessment = async (req, res) => {
         selectedAnswer: ans.selectedAnswer || "",
         isCorrect,
         marksAwarded,
-        concepts: question.concepts,
+        concepts: question.concepts || [],
         timeTakenMs: ans.timeTakenMs || 0,
       };
     });
 
     // For any questions not answered, record them as wrong
-    assessment.questions.forEach((q) => {
+    validQuestions.forEach((q) => {
       const answered = answers.find(
         (a) => a.questionId === q._id.toString()
       );
       if (!answered) {
-        q.concepts.forEach((concept) => {
+        (q.concepts || []).forEach((concept) => {
           if (!conceptBreakdown[concept]) {
             conceptBreakdown[concept] = { correct: 0, total: 0 };
           }
@@ -441,27 +447,29 @@ export const getAttemptDetail = async (req, res) => {
     }
 
     // Load full questions to include text, correct answers, explanations
-    const assessment = await Assessment.findById(
-      attempt.assessmentId._id
-    )
-      .populate("questions")
-      .lean();
+    const assessment = attempt.assessmentId?._id
+      ? await Assessment.findById(attempt.assessmentId._id)
+          .populate("questions")
+          .lean()
+      : null;
 
     const questionMap = {};
-    assessment?.questions?.forEach((q) => {
-      questionMap[q._id.toString()] = q;
+    (assessment?.questions || []).forEach((q) => {
+      if (q && q._id) {
+        questionMap[q._id.toString()] = q;
+      }
     });
 
-    const enrichedAnswers = attempt.answers.map((ans) => {
+    const enrichedAnswers = (attempt.answers || []).map((ans) => {
       const q = questionMap[ans.questionId?.toString()];
       return {
         ...ans,
-        questionText: q?.question,
-        options: q?.options,
-        codeSnippet: q?.codeSnippet,
-        correctAnswer: q?.correctAnswer,
-        explanation: q?.explanation,
-        marks: q?.marks,
+        questionText: q?.question || ans.questionText || "Question",
+        options: q?.options || ans.options || [],
+        codeSnippet: q?.codeSnippet || ans.codeSnippet || "",
+        correctAnswer: q?.correctAnswer || ans.correctAnswer || "",
+        explanation: q?.explanation || ans.explanation || "",
+        marks: q?.marks ?? ans.marks ?? 1,
       };
     });
 

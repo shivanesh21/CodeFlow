@@ -35,11 +35,16 @@ const connectDB = async () => {
   if (process.env.MONGO_URI) {
     try {
       console.log(`🔌 Connecting to MongoDB from environment variable...`);
-      await mongoose.connect(process.env.MONGO_URI);
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000,
+      });
       console.log(`✅ Connected to MongoDB: ${mongoose.connection.host}`);
       return;
     } catch (error) {
       console.warn(`⚠️ Failed to connect to MONGO_URI: ${error.message}`);
+      try {
+        await mongoose.disconnect();
+      } catch (_) {}
     }
   }
 

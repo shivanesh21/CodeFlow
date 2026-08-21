@@ -189,7 +189,7 @@ function AssessmentCard({ assessment, onStart }) {
         </span>
         <span className="stat-pill">
           <span className="stat-pill-icon">❓</span>
-          {assessment.questions?.length || 0} Questions
+          {assessment.questionCount ?? assessment.questions?.length ?? 0} Questions
         </span>
         <span className="stat-pill">
           <span className="stat-pill-icon">⏱</span>
@@ -222,7 +222,13 @@ function AssessmentCard({ assessment, onStart }) {
             ? `✅ ${assessment.userAttempts} attempt${assessment.userAttempts > 1 ? "s" : ""}`
             : "⭕ Not attempted"}
         </span>
-        <button className="btn-start-assessment" onClick={onStart}>
+        <button
+          className="btn-start-assessment"
+          onClick={(e) => {
+            e.stopPropagation();
+            onStart();
+          }}
+        >
           {assessment.userAttempts > 0 ? "Retry →" : "Start →"}
         </button>
       </div>
